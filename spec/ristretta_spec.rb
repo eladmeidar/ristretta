@@ -5,7 +5,12 @@ RSpec.describe Ristretta do
     expect(Ristretta::VERSION).not_to be nil
   end
 
-  it "does something useful" do
-    expect(false).to eq(true)
+  it "should generate an event_key" do
+    subject = SampleSubject.new
+    subject.id = "test"
+    expect(Ristretta.event_key(
+      event_subject: subject,
+      event_type: 'click'
+    )).to be_eql('events:v1:test:click')
   end
 end
