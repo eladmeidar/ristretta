@@ -1,8 +1,6 @@
 # Ristretta
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/ristretta`. To experiment with that code, run `bin/console` for an interactive prompt.
-
-TODO: Delete this and the text above, and describe your gem
+Ristretta is a library that allows easily collecting event data in Redis sorted sets. It uses a timestamp as the event score to ensure the oridnality.
 
 ## Installation
 
@@ -22,8 +20,52 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+### Configuration
 
+Ristretta accepts a configuration block that allows the following options:
+
+```ruby
+Ristretta.config do |config|
+    config.redis_client = redis # a pre-configured Redis client
+    config.namespace = 'ristretta' # namespace for all your redis keys
+    config.version = 1 # easily expire all previous event collectors
+    config.subject_id_method = :id # This is the method that will be used to extract an unique id for the passed event_subject instance
+end
+
+```
+
+### Recording Events
+
+```ruby
+Ristretta::Event.create(event_subject, event_type, event_attrs, timestamp)
+```
+
+| Parameter | Description | Required | Default |
+| --------- | ----------- | -------- | ------- |
+| event_subject | the object that the event will be associated with | V | X |
+| event_type | the event name (string) | V | X |
+| event_attrs | hash with the event details | x | `{}` |
+| timestamp | the event timestamp | x | `Time.now.to_i` |
+
+
+### Fetching Events
+
+```ruby
+Ristretta::Event.find(options = {})
+```
+
+`options` includes the following keys:
+
+| key | Description | Required | Default |
+| --------- | ----------- | -------- | ------- |
+| event_subject | the object that the event will be associated with | V | X |
+| event_type | the event name (string) | V | X |
+| since | timestamp of the olders event you want | x | beginning of time |
+| until | timestamp of the newest event you want | x | `Time.now.to_i` |
+
+the returned value is a series of time ordered events (new to old) that will respond to `event_attrs` and `timestamp`
+
+## 
 ## Development
 
 After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
@@ -32,7 +74,7 @@ To install this gem onto your local machine, run `bundle exec rake install`. To 
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/ristretta.
+Bug reports and pull requests are welcome on GitHub at https://github.com/eladmeidar/ristretta.
 
 ## License
 
