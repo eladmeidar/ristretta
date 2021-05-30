@@ -25,5 +25,8 @@ module Ristretta
         self.new(event_data.first, event_data.last.to_i)
       end
     end
+
+    def Event.find_and_join(options = {})
+    end
   end
 end
