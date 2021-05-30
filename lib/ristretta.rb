@@ -3,10 +3,12 @@
 require 'redis'
 require 'redis-namespace'
 require 'json'
+require_relative "ext/hash"
 require_relative "ristretta/version"
 require_relative "ristretta/exceptions"
 require_relative "ristretta/configuration"
 require_relative "ristretta/event"
+
 
 module Ristretta
   

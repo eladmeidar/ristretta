@@ -1,19 +1,24 @@
 module Ristretta
   class Event
-    attr_reader :event_attrs, :timestamp
+    attr_reader :event_type, :event_attrs, :timestamp
 
-    def initialize(event_attrs, timestamp)
+    def initialize(event_type, event_attrs, timestamp)
+      @event_type = event_type
       @event_attrs = JSON.parse(event_attrs)
       @timestamp = timestamp.to_i
     end
 
-    def Event.create(event_subject, event_type, event_attrs, timestamp = Time.now.to_i)
-      Ristretta.client.zadd(Ristretta.event_key({
-        event_type: event_type,
-        event_subject: event_subject
-      }), timestamp, (event_attrs.merge(timestamp: timestamp.to_i)).to_json, nx: true)
-    end
+    def Event.create(options = {}, timestamp = Time.now.to_i)
+      payload = options[:event_attrs].merge(timestamp: timestamp.to_i)
+      payload[:subject_id] = options[:event_subject].send(Ristretta.configuration.subject_id_method)
+      payload[:subject_class] = options[:event_subject].class.name
 
+      Ristretta.client.zadd(Ristretta.event_key({
+        event_type: options[:event_type],
+        event_subject: options[:event_subject]
+      }), timestamp, payload.to_json, nx: true)
+    end
+    
     def Event.find(options = {})
       raise(Exceptions::SubjectNotSpecified, "event_subject must be specified") if options[:event_subject].nil?
       raise(Exceptions::TypeNotSpecified, "event_type must be specified") if options[:event_type].nil?
@@ -22,11 +27,22 @@ module Ristretta
       end_timestamp = options[:until] || Time.now.to_i
       
       Ristretta.client.zrangebyscore(Ristretta.event_key(options), start_timestamp, end_timestamp, with_scores: true).collect do |event_data|
-        self.new(event_data.first, event_data.last.to_i)
+        attrs, timestamp = event_data
+        self.new(options[:event_type], attrs, timestamp)
       end
     end
 
-    def Event.find_and_join(options = {})
+    def Event.delete(options)
+      start_timestamp = options[:since].to_i
+      end_timestamp = options[:until] || Time.now.to_i
+
+      Ristretta.client.zrangebyscore(Ristretta.event_key(options), start_timestamp, end_timestamp, with_scores: true).collect do |event_data|
+        attrs, _ = event_data
+        attrs = JSON.parse(attrs).map { |k, v| [k.to_sym, v] }.to_h
+        if attrs.contains?(options[:event_attrs])
+          Ristretta.client.zrem(Ristretta.event_key(options),attrs.to_json)
+        end
+      end
     end
   end
 end
