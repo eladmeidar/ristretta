@@ -21,13 +21,13 @@ module Ristretta
   end
 
   def self.event_key(options = {})
-    key = "events:v#{configuration.version.to_s}:#{options[:event_subject].send(configuration.subject_id_method)}:#{options[:event_type]}"
+    key = "#{configuration.namespace}:events:v#{configuration.version.to_s}:#{options[:event_subject].send(configuration.subject_id_method)}:#{options[:event_type]}"
     save_key_name(key)
     key
   end
 
   def self.clear_all_events!
-    client.smembers("events:keys").each do |key|
+    client.smembers("#{configuration.namespace}:events:keys").each do |key|
       client.del key
     end
   end
@@ -35,10 +35,10 @@ module Ristretta
   private
 
   def self.save_key_name(key)
-    client.sadd "events:keys", key
+    client.sadd "#{configuration.namespace}:events:keys", key
   end
 
   def self.configuration
-    @configuration || Ristretta::Configuration.new
+    @configuration ||= Ristretta::Configuration.new
   end
 end

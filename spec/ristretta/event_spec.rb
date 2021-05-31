@@ -3,6 +3,9 @@
 RSpec.describe Ristretta::Event do
 
   before(:each) do
+    Ristretta.config do |c|
+      c.redis_client = Redis.new
+    end
     Ristretta.clear_all_events!
   end
 

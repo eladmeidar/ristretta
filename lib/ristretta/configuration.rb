@@ -12,7 +12,7 @@ module Ristretta
     end
 
     def client
-      @client ||= Redis::Namespace.new(namespace.to_sym, redis: redis_client)
+      @client ||= redis_client
     end
   end
 end
