@@ -21,7 +21,7 @@ module Ristretta
   end
 
   def self.event_key(options = {})
-    key = "#{configuration.namespace}:events:v#{configuration.version.to_s}:#{options[:event_subject].send(configuration.subject_id_method)}:#{options[:event_type]}"
+    key = "#{configuration.namespace}:events:v#{configuration.version.to_s}:#{options[:event_subject].class.name.to_s.downcase}:#{options[:event_subject].send(configuration.subject_id_method)}:#{options[:event_type]}"
     save_key_name(key)
     key
   end

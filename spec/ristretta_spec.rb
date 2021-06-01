@@ -11,6 +11,6 @@ RSpec.describe Ristretta do
     expect(Ristretta.event_key(
       event_subject: subject,
       event_type: 'click'
-    )).to be_eql('ristretta:events:v1:test:click')
+    )).to be_eql('ristretta:events:v1:samplesubject:test:click')
   end
 end
