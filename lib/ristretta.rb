@@ -31,6 +31,10 @@ module Ristretta
       client.del key
     end
   end
+  
+  def self.all_keys
+    client.smembers("#{configuration.namespace}:events:keys")
+  end
 
   private
 
