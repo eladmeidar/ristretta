@@ -10,8 +10,8 @@ module Ristretta
 
     def Event.create(options = {}, timestamp = Time.now.to_i)
       payload = options[:event_attrs].merge(timestamp: timestamp.to_i)
-      payload[:subject_id] = options[:event_object].send(Ristretta.configuration.subject_id_method)
-      payload[:subject_class] = options[:event_object].class.name
+      payload[:subject_id] = options[:event_subject].send(Ristretta.configuration.subject_id_method)
+      payload[:subject_class] = options[:event_subject].class.name
 
       Ristretta.client.zadd(Ristretta.event_key({
         event_type: options[:event_type],
@@ -33,7 +33,7 @@ module Ristretta
       if query.nil?
         objects
       else
-        objects.select { |obj| obj.event_attrs.contains?(query)}
+        objects.select { |obj| obj.event_attrs.symbolize_keys!.contains?(query.symbolize_keys!)}
       end
     end
 

@@ -46,6 +46,31 @@ RSpec.describe Ristretta::Event do
     ).length).to be_eql(1)
   end
 
+  it "should find based on a query" do
+    sample = SampleSubject.new
+    sample.id = 2
+
+    Ristretta::Event.create({event_subject: sample, event_type: 'click', event_attrs: {button: 'happy'}})
+
+    expect(Ristretta::Event.find(
+      event_subject: sample,
+      event_type: 'click',
+      query: {button: 'sad'}
+    ).length).to be_eql(0)
+
+    expect(Ristretta::Event.find(
+      event_subject: sample,
+      event_type: 'click',
+      query: {"button" => 'happy'}
+    ).length).to be_eql(1)
+
+    expect(Ristretta::Event.find(
+      event_subject: sample,
+      event_type: 'click',
+      query: {button: 'happy'}
+    ).length).to be_eql(1)
+  end
+
   it "should delete a single event" do
     sample = SampleSubject.new
     sample.id = 2
